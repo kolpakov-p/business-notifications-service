@@ -1,1 +1,1 @@
-# business-notifications-service
+# Business notifications service
