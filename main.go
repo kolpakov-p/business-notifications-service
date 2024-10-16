@@ -69,7 +69,7 @@ var TgUpdaterDef = &di.Def{
 				data := models.Subscribers{
 					ChatId: update.Message.Chat.ID,
 				}
-				db.FirstOrCreate(&data)
+				db.FirstOrCreate(&data, data)
 				_, err := bot.Send(tgbotapi.MessageConfig{
 					BaseChat: tgbotapi.BaseChat{
 						ChatID:           update.Message.Chat.ID,
