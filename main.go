@@ -70,15 +70,18 @@ var TgUpdaterDef = &di.Def{
 					ChatId: update.Message.Chat.ID,
 				}
 				db.FirstOrCreate(&data)
-				bot.Send(tgbotapi.MessageConfig{
+				_, err := bot.Send(tgbotapi.MessageConfig{
 					BaseChat: tgbotapi.BaseChat{
 						ChatID:           update.Message.Chat.ID,
 						ReplyToMessageID: 0,
 					},
 					Text:                  renderMessage("subscription_success", map[string]string{}),
 					DisableWebPagePreview: false,
-					ParseMode:             "MarkdownV2",
+					ParseMode:             "Markdown",
 				})
+				if err != nil {
+					log.Fatalf("Failed to send message via Telegram: %v", err)
+				}
 			}
 		}
 
@@ -126,7 +129,6 @@ func handleNATSMessages(msg *nats.Msg, ctn di.Container) {
 		if err != nil {
 			// TODO: Sentry.
 			log.Panic(err)
-			break
 		}
 		data := models.Event{
 			Subject: msg.Subject,
@@ -153,15 +155,18 @@ func sendMessage(text string, ctn di.Container) {
 		var sub models.Subscribers
 		db.ScanRows(subscribers, &sub)
 
-		bot.Send(tgbotapi.MessageConfig{
+		_, err := bot.Send(tgbotapi.MessageConfig{
 			BaseChat: tgbotapi.BaseChat{
 				ChatID:           sub.ChatId,
 				ReplyToMessageID: 0,
 			},
 			Text:                  text,
 			DisableWebPagePreview: false,
-			ParseMode:             "MarkdownV2",
+			ParseMode:             "Markdown",
 		})
+		if err != nil {
+			log.Fatalf("Failed to send message via Telegram: %v", err)
+		}
 	}
 }
 
