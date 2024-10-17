@@ -57,22 +57,38 @@ var TgUpdaterDef = &di.Def{
 		fmt.Println("Telegram ok.")
 
 		for update := range updates {
-			if update.Message == nil {
-				continue
-			}
-			if !update.Message.IsCommand() {
+			if update.Message == nil && update.ChannelPost == nil {
 				continue
 			}
 
-			switch update.Message.Command() {
+			command := ""
+			var chatID int64
+			if update.Message != nil {
+				if !update.Message.IsCommand() {
+					continue
+				}
+
+				command = update.Message.Command()
+				chatID = update.Message.Chat.ID
+			}
+			if update.ChannelPost != nil {
+				if !update.ChannelPost.IsCommand() {
+					continue
+				}
+
+				command = update.ChannelPost.Command()
+				chatID = update.ChannelPost.Chat.ID
+			}
+
+			switch command {
 			case "start":
 				data := models.Subscribers{
-					ChatId: update.Message.Chat.ID,
+					ChatId: chatID,
 				}
 				db.FirstOrCreate(&data, data)
 				_, err := bot.Send(tgbotapi.MessageConfig{
 					BaseChat: tgbotapi.BaseChat{
-						ChatID:           update.Message.Chat.ID,
+						ChatID:           chatID,
 						ReplyToMessageID: 0,
 					},
 					Text:                  renderMessage("subscription_success", map[string]string{}),
